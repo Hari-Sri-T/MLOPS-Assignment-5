@@ -1,6 +1,6 @@
 # CI/CD for the Image Classification app
 #   test   -> lint + unit tests on every push / PR
-#   build  -> dvc pull model from S3, build Docker image, push to Docker Hub
+#   build  -> dvc pull model from S3, build Docker image, push to GHCR
 #   deploy -> SSH into EC2, pull the new image, restart container, health-check
 #
 # Repository secrets required (Settings > Secrets and variables > Actions):
@@ -51,7 +51,7 @@ jobs:
         run: python -m pytest -v
 
       - name: Check shell scripts
-        run: bash -n scripts/ec2_setup.sh scripts/deploy.sh
+        run: for script in scripts/*.sh; do bash -n "$script"; done
 
   build:
     name: DVC pull & Docker build/push
@@ -131,6 +131,9 @@ jobs:
     name: Deploy to AWS EC2
     needs: build
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: read
     if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
     steps:
       - uses: actions/checkout@v4
