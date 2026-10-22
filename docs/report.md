@@ -269,6 +269,12 @@ This is an educational single-instance HTTP deployment. Updates briefly interrup
 - SSH action inputs and host fingerprint: https://github.com/appleboy/ssh-action
 - GitHub SSH key setup: https://docs.github.com/en/authentication/connecting-to-github-with-ssh/adding-a-new-ssh-key-to-your-github-account
 
+## Google Drive submission
+
+Complete project submission ZIP:
+
+https://drive.google.com/file/d/1N9BKZ7av0fDJDdVRAaGO1bJtU_E5INIl/view?usp=drive_link
+
 ## GitHub repository
 
 https://github.com/Hari-Sri-T/MLOPS-Assignment-5
