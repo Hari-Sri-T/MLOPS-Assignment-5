@@ -10,7 +10,7 @@ The project builds a cats-versus-dogs classifier and versions its data and train
 
 Completed and verified: five-epoch training, evaluation, DVC lockfile generation, upload to private S3, restoration into an empty cache, Docker build, real container inference, EC2 Docker installation, Nginx configuration, public readiness and prediction checks. The EC2 instance was already running and supplied by the account owner; this session reused it rather than creating an additional billed instance.
 
-CI/CD execution status: pending GitHub API authentication to configure the encrypted repository secrets. The workflow source is implemented. An automated production deployment is not claimed until a successful Actions run is recorded.
+CI/CD execution status: verified successful. GitHub Actions run 39836777627 completed all three jobs, including the public readiness and exact-version check. The SSH host-key mismatch on the first attempt was corrected using the verified ECDSA host fingerprint; deployment succeeded on attempt 2.
 
 Public application: http://13.202.231.26/  
 Public readiness: http://13.202.231.26/health
@@ -165,7 +165,7 @@ docker run -d --name image-classifier --restart unless-stopped -p 127.0.0.1:8080
 
 The security group must permit public HTTP 80 and SSH from the authorized admin/deployment network. No public 8080 rule is required. For a new EC2 deployment, launch an x86_64 instance with its key pair and suitable storage, then perform the same setup. The AWS profile used here has S3 access but lacks EC2 describe/create privileges, so provisioning a second instance was not attempted.
 
-The captured EC2 state shows a healthy container, working Nginx configuration, approximately 1.9 GiB free disk, and about 45 MiB swap use at the time of capture. Disk use must be watched as additional image versions accumulate; this project does not prune unrelated images automatically.
+The captured EC2 state shows a healthy container, working Nginx configuration, approximately 1.9 GiB free disk, and about 83 MiB swap use at the time of capture. Disk use must be watched as additional image versions accumulate; this project does not prune unrelated images automatically.
 
 ![EC2 running container, readiness, fingerprint and resource checks](screenshots/04-ec2-deployment.png)
 
@@ -189,15 +189,28 @@ Place ci-cd.yaml under .github/workflows so GitHub detects it. A root-level YAML
 | EC2_HOST | 13.202.231.26 |
 | EC2_USER | ec2-user |
 | EC2_SSH_KEY | Private key stored only as an encrypted Actions secret |
-| EC2_SSH_FINGERPRINT | Verified ED25519 host fingerprint |
+| EC2_SSH_FINGERPRINT | Verified ECDSA host fingerprint |
 
 AWS_REGION defaults to ap-southeast-2 for the S3 bucket. GitHub registry authentication is separate from the EC2 SSH key. SSH access allows pushing Git commits, but configuring encrypted repository secrets requires GitHub API authorization or the owner's Settings interface.
 
-Automated run evidence will be inserted here after encrypted secrets are configured and the complete workflow succeeds.
+Verified workflow run: https://github.com/Hari-Sri-T/MLOPS-Assignment-5/actions/runs/39836777627  
+Deployed code commit: c905eb85659034cc311b173dff9cc015ac1a0743  
+Completed workflow attempt: 2
+
+| Job | Result | Duration |
+| --- | --- | --- |
+| Lint & unit tests | success | 12 seconds |
+| DVC pull & Docker build/push | success | 181 seconds |
+| Deploy to AWS EC2 | success | 139 seconds |
+
+![Actual GitHub Actions page showing all three successful jobs](screenshots/10-github-actions.png)
+
+The published image is ghcr.io/hari-sri-t/mlops-assignment-5:c905eb85659034cc311b173dff9cc015ac1a0743. The public endpoint returns this same full commit. The bootstrap image was removed only after the automated rollout passed, reclaiming approximately 1.5 GiB of disk space.
+
 
 ## 10. Public application execution and checks
 
-The browser opened http://13.202.231.26/, uploaded actual validation images and displayed real API responses. The public health endpoint returned status ok, model_ready true and version assignment5. Recorded verification time is supplied in docs/evidence/public-verification.json.
+The browser opened http://13.202.231.26/, uploaded actual validation images and displayed real API responses. The public health endpoint returned status ok, model_ready true and version c905eb85659034cc311b173dff9cc015ac1a0743. The manual bootstrap used version assignment5; the final evidence and screenshots show the CI-deployed version. Verification was recorded at 2026-10-23T00:47:56.526055+05:30 in docs/evidence/public-verification.json.
 
 | Sample | Predicted class | Confidence |
 | --- | --- | --- |
@@ -230,15 +243,16 @@ The test suite contains 17 passing cases covering successful requests, missing u
 | Long EC2 DNS name exceeded Nginx's server-name hash bucket | Use the short public IP as server_name; nginx -t then passed. |
 | Health endpoint previously reported success with no model | Require successful loading of model and class metadata; test failure cases. |
 | GitHub rejected the existing SSH key | Owner added its public key to GitHub; SSH authentication then succeeded. |
+| GitHub SSH client selected a different host-key algorithm | Verify ECDSA and ED25519 fingerprints through the trusted connection, store the ECDSA fingerprint selected by the deployment client, and rerun deployment. |
 | GitHub device authorization expired | Request a fresh browser authorization before configuring repository secrets. |
 
 ## 12. Submission contents and limitations
 
 The submission includes application source, dvc.yaml, the working ci-cd.yaml under .github/workflows, Dockerfile, the generated lockfile and measured metrics, a PDF and editable Word report, screenshots and original evidence, plus repository and live application links. The source archive also includes the trained model for convenient local execution; the public Git repository versions that binary through DVC.
 
-Screenshots of execution transcripts were taken with a real browser from the captured command output and are labeled as execution evidence. Application screenshots are actual public-URL browser captures. They are not reconstructed AWS or GitHub console screens. Original command logs and JSON responses are retained beside the screenshots.
+Screenshots of execution transcripts were taken with a real browser from the captured command output and are labeled as execution evidence. Application screenshots are actual public-URL browser captures. They are not reconstructed AWS console screens. The GitHub Actions screenshot is a capture of the actual public workflow page. Original command logs and JSON responses are retained beside the screenshots.
 
-This is an educational single-instance HTTP deployment. Updates briefly interrupt service, the public IP can change after stopping the instance, and EC2/storage charges continue until the owner stops or removes resources. HTTPS, high availability and an independent test-set evaluation are outside this assignment implementation. The existing domain-based Nginx application remains in place. CI/CD is only considered demonstrated once a successful workflow run is available.
+This is an educational single-instance HTTP deployment. Updates briefly interrupt service, the public IP can change after stopping the instance, and EC2/storage charges continue until the owner stops or removes resources. HTTPS, high availability and an independent test-set evaluation are outside this assignment implementation. The existing domain-based Nginx application remains in place. The complete CI/CD workflow and its public deployment were verified successfully.
 
 ## 13. References
 

@@ -1,10 +1,10 @@
 {
-  "verified_at": "2026-10-23T00:15:41.793856+05:30",
+  "verified_at": "2026-10-23T00:47:56.526055+05:30",
   "url": "http://13.202.231.26",
   "health": {
     "model_ready": true,
     "status": "ok",
-    "version": "assignment5"
+    "version": "c905eb85659034cc311b173dff9cc015ac1a0743"
   },
   "predictions": [
     {

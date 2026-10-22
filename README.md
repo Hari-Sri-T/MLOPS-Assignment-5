@@ -4,7 +4,7 @@ Cats vs dogs classification with MobileNetV2, Flask, DVC, S3, Docker,
 GitHub Actions, GitHub Container Registry (GHCR), and EC2.
 
 - Repository: https://github.com/Hari-Sri-T/MLOPS-Assignment-5
-- Application target: http://13.202.231.26/
+- Verified application: http://13.202.231.26/
 - Readiness: http://13.202.231.26/health
 - Detailed implementation and evidence: [project report](docs/report.md).
 
@@ -128,11 +128,11 @@ Add these **repository secrets** under Settings → Secrets and variables → Ac
 | `EC2_HOST` | `13.202.231.26` |
 | `EC2_USER` | `ec2-user` |
 | `EC2_SSH_KEY` | Private `btech.pem` contents, entered only in the secret store |
-| `EC2_SSH_FINGERPRINT` | ED25519 host fingerprint verified through a trusted instance connection |
+| `EC2_SSH_FINGERPRINT` | ECDSA host fingerprint verified through a trusted instance connection |
 
 The optional variable `AWS_REGION` defaults to `ap-southeast-2` (S3 region).
 On EC2, obtain the host fingerprint with
-`sudo ssh-keygen -lf /etc/ssh/ssh_host_ed25519_key.pub`.
+`sudo ssh-keygen -lf /etc/ssh/ssh_host_ecdsa_key.pub`.
 `scripts/deploy.sh` uses a temporary GHCR login, pulls the commit tag, retains
 the previous container until readiness succeeds, and restores it on failure.
 The public check verifies readiness and the exact deployed commit.
