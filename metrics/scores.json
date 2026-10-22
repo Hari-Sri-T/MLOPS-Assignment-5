@@ -1,0 +1,14 @@
+{
+  "val_loss": 0.2139,
+  "val_accuracy": 0.935,
+  "precision": 0.9823,
+  "recall": 0.886,
+  "f1": 0.9317,
+  "n_samples": 1000,
+  "confusion_matrix": {
+    "tn": 492,
+    "fp": 8,
+    "fn": 57,
+    "tp": 443
+  }
+}

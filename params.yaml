@@ -1,0 +1,25 @@
+# Central configuration for the DVC pipeline.
+# Changing any value listed under a stage's `params:` in dvc.yaml
+# makes `dvc repro` re-run that stage (and everything downstream).
+
+data:
+  source_url: https://storage.googleapis.com/tensorflow-1-public/course2/cats_and_dogs_filtered.zip
+  raw_dir: data/raw
+  dataset_dir: data/raw/cats_and_dogs_filtered   # contains train/ and validation/
+
+base_model:
+  name: MobileNetV2
+  weights: imagenet        # use "null" to train from scratch (no download needed)
+
+train:
+  image_size: 160
+  batch_size: 32
+  epochs: 5
+  learning_rate: 0.0001
+  seed: 42
+  augmentation: true
+
+model:
+  dir: artifacts/model
+  file: artifacts/model/model.keras
+  classes_file: artifacts/model/classes.json

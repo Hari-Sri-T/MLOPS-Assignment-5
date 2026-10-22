@@ -1,0 +1,21 @@
+{
+  "bucket": "hari-dvc-assignment",
+  "region": "ap-southeast-2",
+  "remote": "s3://hari-dvc-assignment/dvc-store",
+  "public_access_block": {
+    "BlockPublicAcls": true,
+    "IgnorePublicAcls": true,
+    "BlockPublicPolicy": true,
+    "RestrictPublicBuckets": true
+  },
+  "objects": 3005,
+  "bytes": 78529321,
+  "sample_keys": [
+    "dvc-store/files/md5/00/116fea763432882f9d914d78876531",
+    "dvc-store/files/md5/00/297cf452277593c55645d0f5c5bc0a",
+    "dvc-store/files/md5/00/32039455283acaa3d460b33b857915",
+    "dvc-store/files/md5/00/39ca72567c3689e7691d76406e5a90",
+    "dvc-store/files/md5/00/3e40879808fe309022d84157ea6c91",
+    "dvc-store/files/md5/00/417706997dbc1e93fff3769f96ead0"
+  ]
+}

@@ -1,0 +1,11 @@
+# Local training, data versioning and testing (Windows / macOS / Linux, Python 3.10-3.12)
+# Same TensorFlow version as the Docker image so the saved model loads identically.
+tensorflow==2.20.0
+flask==3.1.0
+gunicorn==23.0.0; platform_system != "Windows"
+pillow==11.1.0
+pyyaml==6.0.2
+dvc[s3]==3.59.1
+pathspec==0.12.1  # DVC 3.59 uses private APIs removed in pathspec 1.x
+pytest==8.3.4
+flake8==7.1.1

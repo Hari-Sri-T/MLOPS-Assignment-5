@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Cats vs Dogs Classifier</title>
+  <style>
+    :root {
+      --bg: #f6f4ef; --card: #ffffff; --ink: #1d1d1b; --muted: #6b6a65;
+      --line: #e3e0d8; --accent: #c2562b; --accent-ink: #ffffff; --ok: #2f7a4f;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root { --bg: #161614; --card: #22211e; --ink: #f1efe9; --muted: #a3a19a;
+              --line: #34322e; --accent: #e27447; --accent-ink: #161614; --ok: #6cc08f; }
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--bg); color: var(--ink);
+           font: 16px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif; }
+    main { max-width: 640px; margin: 0 auto; padding: 48px 16px; }
+    h1 { font-size: 1.9rem; margin: 0 0 4px; letter-spacing: -0.02em; }
+    .sub { color: var(--muted); margin: 0 0 28px; }
+    .card { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 24px; }
+    .drop { border: 2px dashed var(--line); border-radius: 10px; padding: 28px 16px;
+            display: block; text-align: center; cursor: pointer; transition: border-color .15s; }
+    .drop:hover, .drop.over { border-color: var(--accent); }
+    .drop:focus-within { outline: 2px solid var(--accent); outline-offset: 3px; }
+    .drop input { position: absolute; width: 1px; height: 1px; opacity: 0; }
+    #preview { display: none; max-width: 100%; max-height: 300px; border-radius: 8px; margin: 0 auto 12px; }
+    button { margin-top: 16px; width: 100%; padding: 12px; border: 0; border-radius: 10px;
+             background: var(--accent); color: var(--accent-ink); font-size: 1rem; font-weight: 600; cursor: pointer; }
+    button:disabled { opacity: .5; cursor: default; }
+    #result { margin-top: 20px; display: none; }
+    .label { font-size: 1.5rem; font-weight: 700; text-transform: capitalize; }
+    .bar { height: 10px; background: var(--line); border-radius: 6px; overflow: hidden; margin: 4px 0 10px; }
+    .bar > span { display: block; height: 100%; background: var(--accent); }
+    .row { display: flex; justify-content: space-between; font-size: .9rem; color: var(--muted); text-transform: capitalize; }
+    .err { color: var(--accent); }
+    footer { margin-top: 24px; font-size: .8rem; color: var(--muted); }
+    footer span { color: var(--ok); }
+  </style>
+</head>
+<body>
+<main>
+  <h1>Cats vs Dogs Classifier</h1>
+  <p class="sub">MobileNetV2 transfer learning · versioned with DVC · shipped by GitHub Actions to AWS EC2</p>
+
+  <div class="card">
+    <label class="drop" id="drop">
+      <img id="preview" alt="Selected image preview">
+      <div id="hint">Click or drop an image here (JPG / PNG, max 8 MB)</div>
+      <input type="file" id="file" accept="image/*">
+    </label>
+    <button id="go" disabled>Classify</button>
+
+    <div id="result" aria-live="polite"></div>
+  </div>
+
+  <footer>Status: <span>running</span> · version {{ version }} · container {{ host }}</footer>
+</main>
+
+<script>
+  const fileInput = document.getElementById('file');
+  const drop = document.getElementById('drop');
+  const preview = document.getElementById('preview');
+  const hint = document.getElementById('hint');
+  const go = document.getElementById('go');
+  const result = document.getElementById('result');
+  let chosen = null;
+
+  function choose(f) {
+    if (!f) return;
+    chosen = f;
+    preview.src = URL.createObjectURL(f);
+    preview.style.display = 'block';
+    hint.textContent = f.name;
+    go.disabled = false;
+    result.style.display = 'none';
+  }
+  fileInput.addEventListener('change', e => choose(e.target.files[0]));
+  ['dragover', 'dragenter'].forEach(t => drop.addEventListener(t, e => { e.preventDefault(); drop.classList.add('over'); }));
+  ['dragleave', 'drop'].forEach(t => drop.addEventListener(t, e => { e.preventDefault(); drop.classList.remove('over'); }));
+  drop.addEventListener('drop', e => choose(e.dataTransfer.files[0]));
+
+  go.addEventListener('click', async () => {
+    if (!chosen) return;
+    go.disabled = true; go.textContent = 'Classifying…';
+    const fd = new FormData(); fd.append('file', chosen);
+    try {
+      const r = await fetch('/predict', { method: 'POST', body: fd });
+      const d = await r.json();
+      if (!r.ok) throw new Error(d.error || r.statusText);
+      const rows = Object.entries(d.probabilities).map(([k, v]) =>
+        `<div class="row"><span>${k}</span><span>${(v * 100).toFixed(1)}%</span></div>
+         <div class="bar"><span style="width:${v * 100}%"></span></div>`).join('');
+      result.innerHTML = `<div class="label">${d.label.replace(/s$/, '')}</div>
+        <div class="row" style="margin-bottom:12px"><span>confidence ${(d.confidence * 100).toFixed(1)}%</span></div>${rows}`;
+    } catch (e) {
+      const error = document.createElement('p');
+      error.className = 'err';
+      error.textContent = e.message;
+      result.replaceChildren(error);
+    }
+    result.style.display = 'block';
+    go.disabled = false; go.textContent = 'Classify';
+  });
+</script>
+</body>
+</html>

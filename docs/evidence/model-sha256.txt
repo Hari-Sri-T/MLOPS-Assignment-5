@@ -1,0 +1,2 @@
+af37e60eea67360d3c5be66540d10b47b48646cd096390d1c72a0dbe7c9dbe92  model.keras
+Fresh S3 restore: identical SHA-256.

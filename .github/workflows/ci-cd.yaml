@@ -1,0 +1,171 @@
+# CI/CD for the Image Classification app
+#   test   -> lint + unit tests on every push / PR
+#   build  -> dvc pull model from S3, build Docker image, push to Docker Hub
+#   deploy -> SSH into EC2, pull the new image, restart container, health-check
+#
+# Repository secrets required (Settings > Secrets and variables > Actions):
+#   AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY   IAM user with read access to the DVC S3 bucket
+#   EC2_HOST, EC2_USER, EC2_SSH_KEY, EC2_SSH_FINGERPRINT
+# Repository variable (optional): AWS_REGION   defaults to ap-southeast-2 (S3 bucket region)
+
+name: CI-CD
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-cd-${{ github.ref }}
+  cancel-in-progress: false
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+env:
+  IMAGE_NAME: ghcr.io/hari-sri-t/mlops-assignment-5
+  AWS_REGION: ${{ vars.AWS_REGION || 'ap-southeast-2' }}
+
+jobs:
+  test:
+    name: Lint & unit tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install lightweight test dependencies
+        # TensorFlow is not needed: tests use a stub model
+        run: pip install flask==3.1.0 pillow==11.1.0 pyyaml==6.0.2 numpy pytest==8.3.4 flake8==7.1.1
+
+      - name: Lint
+        run: flake8 app.py src tests --max-line-length 110
+
+      - name: Unit tests
+        run: python -m pytest -v
+
+      - name: Check shell scripts
+        run: bash -n scripts/ec2_setup.sh scripts/deploy.sh
+
+  build:
+    name: DVC pull & Docker build/push
+    needs: test
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    outputs:
+      tag: ${{ steps.vars.outputs.tag }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install DVC
+        run: pip install "dvc[s3]==3.59.1" "pathspec==0.12.1"
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Pull trained model from S3 (DVC remote)
+        run: |
+          test -s dvc.lock
+          dvc pull train
+          ls -lh artifacts/model
+          dvc metrics show
+
+      - name: Image tag
+        id: vars
+        run: echo "tag=$GITHUB_SHA" >> "$GITHUB_OUTPUT"
+
+      - uses: docker/setup-buildx-action@v3
+
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          build-args: APP_VERSION=${{ steps.vars.outputs.tag }}
+          tags: |
+            ${{ env.IMAGE_NAME }}:latest
+            ${{ env.IMAGE_NAME }}:${{ steps.vars.outputs.tag }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Verify container inference
+        run: |
+          docker run --rm --entrypoint python "${IMAGE_NAME}:${GITHUB_SHA}" -c '
+          import io
+          from PIL import Image
+          from app import app
+          client = app.test_client()
+          assert client.get("/health").status_code == 200
+          image = io.BytesIO()
+          Image.new("RGB", (160, 160)).save(image, format="PNG")
+          image.seek(0)
+          result = client.post("/predict", data={"file": (image, "smoke.png")})
+          assert result.status_code == 200, result.get_json()
+          assert result.get_json()["label"] in ("cats", "dogs")
+          print(result.get_json())'
+
+  deploy:
+    name: Deploy to AWS EC2
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Require SSH host verification
+        env:
+          FINGERPRINT: ${{ secrets.EC2_SSH_FINGERPRINT }}
+        run: test -n "$FINGERPRINT"
+
+      - name: Pull and restart container on EC2
+        uses: appleboy/ssh-action@v1.2.0
+        env:
+          IMAGE: ${{ env.IMAGE_NAME }}:${{ needs.build.outputs.tag }}
+          GHCR_USERNAME: ${{ github.actor }}
+          GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          fingerprint: ${{ secrets.EC2_SSH_FINGERPRINT }}
+          envs: IMAGE,GHCR_USERNAME,GHCR_TOKEN
+          script_path: scripts/deploy.sh
+
+      - name: Health check public URL
+        env:
+          EC2_HOST: ${{ secrets.EC2_HOST }}
+          EXPECTED_VERSION: ${{ needs.build.outputs.tag }}
+        run: |
+          for i in $(seq 1 20); do
+            if curl --connect-timeout 5 --max-time 15 -fsS "http://${EC2_HOST}/health" > health.json &&
+               python -c 'import json, os; d=json.load(open("health.json")); assert d["model_ready"] and d["version"] == os.environ["EXPECTED_VERSION"]'; then
+              cat health.json
+              echo "Deployment healthy"
+              exit 0
+            fi
+            echo "Waiting for app to start ($i/20)..."; sleep 10
+          done
+          echo "App did not become healthy"; exit 1

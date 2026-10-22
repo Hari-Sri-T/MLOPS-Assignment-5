@@ -1,0 +1,29 @@
+Running stage 'data_ingestion':
+[2026-10-22 23:07:28,003] INFO data_ingestion: Downloading https://storage.googleapis.com/tensorflow-1-public/course2/cats_and_dogs_filtered.zip
+[2026-10-22 23:07:38,698] INFO data_ingestion: Saved archive to data/raw/dataset.zip (68.6 MB)
+[2026-10-22 23:07:39,062] INFO data_ingestion: train      cats    1000 images
+[2026-10-22 23:07:39,063] INFO data_ingestion: train      dogs    1000 images
+[2026-10-22 23:07:39,064] INFO data_ingestion: validation cats     500 images
+[2026-10-22 23:07:39,065] INFO data_ingestion: validation dogs     500 images
+Updating lock file 'dvc.lock'
+Running stage 'train':
+Found 2000 files belonging to 2 classes.
+Found 1000 files belonging to 2 classes.
+[2026-10-22 23:07:45,640] INFO train: Classes: ['cats', 'dogs']
+[2026-10-22 23:07:50,694] INFO train: Model: "cats_vs_dogs_mobilenetv2"
+Epoch 1/5
+63/63 ━━━━━━━━━━━━━━━━━━━━ 30s 443ms/step - accuracy: 0.6590 - loss: 0.6225 - val_accuracy: 0.7260 - val_loss: 0.5167
+Epoch 2/5
+63/63 ━━━━━━━━━━━━━━━━━━━━ 27s 427ms/step - accuracy: 0.7900 - loss: 0.4647 - val_accuracy: 0.8470 - val_loss: 0.3841
+Epoch 3/5
+63/63 ━━━━━━━━━━━━━━━━━━━━ 26s 418ms/step - accuracy: 0.8635 - loss: 0.3595 - val_accuracy: 0.8910 - val_loss: 0.3024
+Epoch 4/5
+63/63 ━━━━━━━━━━━━━━━━━━━━ 30s 486ms/step - accuracy: 0.8880 - loss: 0.2997 - val_accuracy: 0.9200 - val_loss: 0.2471
+Epoch 5/5
+63/63 ━━━━━━━━━━━━━━━━━━━━ 30s 476ms/step - accuracy: 0.9125 - loss: 0.2515 - val_accuracy: 0.9350 - val_loss: 0.2139
+[2026-10-22 23:10:14,628] INFO train: Model saved to artifacts/model/model.keras
+Updating lock file 'dvc.lock'
+Running stage 'evaluate':
+Found 1000 files belonging to 2 classes.
+[2026-10-22 23:10:41,621] INFO evaluate: Scores: {'val_loss': 0.2139, 'val_accuracy': 0.935, 'precision': 0.9823, 'recall': 0.886, 'f1': 0.9317, 'n_samples': 1000, 'confusion_matrix': {'tn': 492, 'fp': 8, 'fn': 57, 'tp': 443}}
+Updating lock file 'dvc.lock'

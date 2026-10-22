@@ -1,0 +1,107 @@
+schema: '2.0'
+stages:
+  data_ingestion:
+    cmd: python -m src.data_ingestion
+    deps:
+    - path: src/data_ingestion.py
+      hash: md5
+      md5: 9519a827f5e92fa62ad25bf1a7d1f932
+      size: 1440
+    - path: src/utils.py
+      hash: md5
+      md5: 965bb74edfce7cca92c7cd6df5bc9b7c
+      size: 769
+    params:
+      params.yaml:
+        data.dataset_dir: data/raw/cats_and_dogs_filtered
+        data.raw_dir: data/raw
+        data.source_url: 
+          https://storage.googleapis.com/tensorflow-1-public/course2/cats_and_dogs_filtered.zip
+    outs:
+    - path: data/raw
+      hash: md5
+      md5: 174fe7fcb400140a007ac05c36b5bfd4.dir
+      size: 68556316
+      nfiles: 3001
+  train:
+    cmd: python -m src.train
+    deps:
+    - path: data/raw
+      hash: md5
+      md5: 174fe7fcb400140a007ac05c36b5bfd4.dir
+      size: 68556316
+      nfiles: 3001
+    - path: src/train.py
+      hash: md5
+      md5: 10e89a30203e3b0ebb7e0c7c8ee4d88d
+      size: 3116
+    - path: src/utils.py
+      hash: md5
+      md5: 965bb74edfce7cca92c7cd6df5bc9b7c
+      size: 769
+    params:
+      params.yaml:
+        base_model:
+          name: MobileNetV2
+          weights: imagenet
+        data.dataset_dir: data/raw/cats_and_dogs_filtered
+        model:
+          dir: artifacts/model
+          file: artifacts/model/model.keras
+          classes_file: artifacts/model/classes.json
+        train:
+          image_size: 160
+          batch_size: 32
+          epochs: 5
+          learning_rate: 0.0001
+          seed: 42
+          augmentation: true
+    outs:
+    - path: artifacts/model
+      hash: md5
+      md5: d5e92a224d329eefbaeac753fb26ac34.dir
+      size: 9651987
+      nfiles: 2
+    - path: metrics/train_history.json
+      hash: md5
+      md5: 37c5c8d2c659e1d53247fea63a3451d2
+      size: 844
+  evaluate:
+    cmd: python -m src.evaluate
+    deps:
+    - path: artifacts/model
+      hash: md5
+      md5: d5e92a224d329eefbaeac753fb26ac34.dir
+      size: 9651987
+      nfiles: 2
+    - path: data/raw
+      hash: md5
+      md5: 174fe7fcb400140a007ac05c36b5bfd4.dir
+      size: 68556316
+      nfiles: 3001
+    - path: src/evaluate.py
+      hash: md5
+      md5: e6e7c89ed60b38912004f0940f2a80d9
+      size: 2231
+    - path: src/utils.py
+      hash: md5
+      md5: 965bb74edfce7cca92c7cd6df5bc9b7c
+      size: 769
+    params:
+      params.yaml:
+        data.dataset_dir: data/raw/cats_and_dogs_filtered
+        model:
+          dir: artifacts/model
+          file: artifacts/model/model.keras
+          classes_file: artifacts/model/classes.json
+        train.batch_size: 32
+        train.image_size: 160
+    outs:
+    - path: metrics/confusion_matrix.json
+      hash: md5
+      md5: 2cdc5727b29c0aca405efb2018c4dc58
+      size: 41000
+    - path: metrics/scores.json
+      hash: md5
+      md5: 06f0416f6d2dbb32c9b9fabc32365fe2
+      size: 213

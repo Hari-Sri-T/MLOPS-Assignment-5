@@ -1,0 +1,16 @@
+** WARNING: connection is not using a post-quantum key exchange algorithm.
+** This session may be vulnerable to "store now, decrypt later" attacks.
+** The server may need to be upgraded. See https://openssh.com/pq.html
+CONTAINER ID   IMAGE                          COMMAND                  CREATED         STATUS                   PORTS                      NAMES
+99897a09f029   image-classifier:assignment5   "gunicorn --bind 0.0…"   4 minutes ago   Up 4 minutes (healthy)   127.0.0.1:8080->8080/tcp   image-classifier
+Image=sha256:743b8f55a9fe59deb00cbca6318c0f7181e36da6feeeacfc429f38a7bb8e10d3 Health=healthy
+af37e60eea67360d3c5be66540d10b47b48646cd096390d1c72a0dbe7c9dbe92  /app/artifacts/model/model.keras
+{"model_ready":true,"status":"ok","version":"assignment5"}
+256 SHA256:ajOketwTdxRADeEzi/zoXP603PJL0OT7eSGjGy5q8Go root@ip-172-31-11-132.ap-south-1.compute.internal (ED25519)
+nginx: the configuration file /etc/nginx/nginx.conf syntax is ok
+nginx: configuration file /etc/nginx/nginx.conf test is successful
+               total        used        free      shared  buff/cache   available
+Mem:           913Mi       533Mi        65Mi       8.0Mi       314Mi       227Mi
+Swap:          2.0Gi        45Mi       2.0Gi
+Filesystem      Size  Used Avail Use% Mounted on
+/dev/nvme0n1p1  8.0G  6.1G  1.9G  77% /

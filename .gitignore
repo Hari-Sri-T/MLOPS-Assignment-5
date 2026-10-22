@@ -1,0 +1,24 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+.env
+.aws/
+.agents/
+.codex/
+*.pem
+*.key
+.dvc/config.local
+.cache/
+submission/
+.pytest_cache/
+
+# DVC-managed outputs (stored in S3, not Git)
+/data/raw
+/artifacts/model
+
+# OS / editor
+.DS_Store
+.vscode/
+.idea/

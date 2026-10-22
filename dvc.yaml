@@ -1,0 +1,68 @@
+# DVC pipeline: data_ingestion -> train -> evaluate
+# Run with `dvc repro`; view the graph with `dvc dag`.
+# Outputs listed under `outs` are cached by DVC and pushed to the S3 remote.
+
+stages:
+  data_ingestion:
+    cmd: python -m src.data_ingestion
+    deps:
+      - src/data_ingestion.py
+      - src/utils.py
+    params:
+      - data.source_url
+      - data.raw_dir
+      - data.dataset_dir
+    outs:
+      - data/raw
+
+  train:
+    cmd: python -m src.train
+    deps:
+      - src/train.py
+      - src/utils.py
+      - data/raw
+    params:
+      - data.dataset_dir
+      - base_model
+      - train
+      - model
+    outs:
+      - artifacts/model
+    plots:
+      - metrics/train_history.json:
+          cache: false
+
+  evaluate:
+    cmd: python -m src.evaluate
+    deps:
+      - src/evaluate.py
+      - src/utils.py
+      - artifacts/model
+      - data/raw
+    params:
+      - data.dataset_dir
+      - model
+      - train.image_size
+      - train.batch_size
+    metrics:
+      - metrics/scores.json:
+          cache: false
+    plots:
+      - metrics/confusion_matrix.json:
+          cache: false
+
+# Plot definitions used by `dvc plots show` / `dvc plots diff`
+plots:
+  - Accuracy per epoch:
+      x: epoch
+      y:
+        metrics/train_history.json: [accuracy, val_accuracy]
+  - Loss per epoch:
+      x: epoch
+      y:
+        metrics/train_history.json: [loss, val_loss]
+  - Confusion matrix:
+      template: confusion
+      x: predicted
+      y:
+        metrics/confusion_matrix.json: actual

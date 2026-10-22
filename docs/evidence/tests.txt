@@ -1,0 +1,26 @@
+============================= test session starts ==============================
+platform linux -- Python 3.11.16, pytest-8.3.4, pluggy-1.7.0 -- /home/hari/Downloads/image-classifier/.venv/bin/python
+cachedir: .pytest_cache
+rootdir: /home/hari/Downloads/image-classifier
+plugins: platformdirs-4.13.5, hydra-core-1.3.7
+collecting ... collected 17 items
+
+tests/test_app.py::test_index_page PASSED                                [  5%]
+tests/test_app.py::test_health_without_model PASSED                      [ 11%]
+tests/test_app.py::test_health_with_loaded_model PASSED                  [ 17%]
+tests/test_app.py::test_health_rejects_broken_model PASSED               [ 23%]
+tests/test_app.py::test_predict_requires_file PASSED                     [ 29%]
+tests/test_app.py::test_predict_rejects_bad_extension PASSED             [ 35%]
+tests/test_app.py::test_predict_without_model PASSED                     [ 41%]
+tests/test_app.py::test_predict_rejects_corrupt_image PASSED             [ 47%]
+tests/test_app.py::test_predict_rejects_oversized_upload PASSED          [ 52%]
+tests/test_app.py::test_ready_requires_class_metadata PASSED             [ 58%]
+tests/test_app.py::test_predict_with_stub_model PASSED                   [ 64%]
+tests/test_app.py::test_preprocess_shape PASSED                          [ 70%]
+tests/test_app.py::test_predictor_probabilities PASSED                   [ 76%]
+tests/test_deploy.py::test_deployment_rollback[True-False-True] PASSED   [ 82%]
+tests/test_deploy.py::test_deployment_rollback[False-False-True] PASSED  [ 88%]
+tests/test_deploy.py::test_deployment_rollback[False-True-True] PASSED   [ 94%]
+tests/test_deploy.py::test_deployment_rollback[False-True-False] PASSED  [100%]
+
+============================== 17 passed in 1.20s ==============================

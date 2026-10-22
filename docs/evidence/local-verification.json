@@ -1,0 +1,29 @@
+{
+  "health": {
+    "model_ready": true,
+    "status": "ok",
+    "version": "assignment5"
+  },
+  "predictions": [
+    {
+      "file": "cat.2000.jpg",
+      "expected": "cats",
+      "confidence": 0.9758,
+      "label": "cats",
+      "probabilities": {
+        "cats": 0.9758,
+        "dogs": 0.0242
+      }
+    },
+    {
+      "file": "dog.2000.jpg",
+      "expected": "dogs",
+      "confidence": 0.9342,
+      "label": "dogs",
+      "probabilities": {
+        "cats": 0.0658,
+        "dogs": 0.9342
+      }
+    }
+  ]
+}
