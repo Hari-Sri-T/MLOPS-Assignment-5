@@ -4,6 +4,10 @@ Project: MLOPS Assignment 5
 
 Student name: Tanniru Hari Sri Shanmukha Sai
 
+Google Drive submission:
+
+https://drive.google.com/file/d/1N9BKZ7av0fDJDdVRAaGO1bJtU_E5INIl/view?usp=drive_link
+
 PRN: 23070126135
 
 Implementation: 22–23 October 2026 (Asia/Kolkata)
@@ -268,12 +272,6 @@ This is an educational single-instance HTTP deployment. Updates briefly interrup
 - Docker container execution: https://docs.docker.com/engine/containers/run/
 - SSH action inputs and host fingerprint: https://github.com/appleboy/ssh-action
 - GitHub SSH key setup: https://docs.github.com/en/authentication/connecting-to-github-with-ssh/adding-a-new-ssh-key-to-your-github-account
-
-## Google Drive submission
-
-Complete project submission ZIP:
-
-https://drive.google.com/file/d/1N9BKZ7av0fDJDdVRAaGO1bJtU_E5INIl/view?usp=drive_link
 
 ## GitHub repository
 
