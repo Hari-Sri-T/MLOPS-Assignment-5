@@ -1,7 +1,11 @@
 # Deploying an Image Classification Application on AWS Using Docker, DVC, and CI/CD
 
-Project: MLOPS Assignment 5  
-Author: Hari-Sri-T  
+Project: MLOPS Assignment 5
+
+Student name: Tanniru Hari Sri Shanmukha Sai
+
+PRN: 23070126135
+
 Implementation: 22–23 October 2026 (Asia/Kolkata)
 
 ## 1. Objective and implementation status

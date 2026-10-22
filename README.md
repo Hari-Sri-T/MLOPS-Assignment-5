@@ -1,5 +1,8 @@
 # Image Classification on AWS
 
+**Student:** Tanniru Hari Sri Shanmukha Sai  
+**PRN:** 23070126135
+
 Cats vs dogs classification with MobileNetV2, Flask, DVC, S3, Docker,
 GitHub Actions, GitHub Container Registry (GHCR), and EC2.
 
